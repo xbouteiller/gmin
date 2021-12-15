@@ -114,12 +114,20 @@ class gminComput(ParseTreeFolder):
             df['delta_time']
         except:
             print('delta time column is leaking ... computing ...')
-            df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , format=self.dateformat)  
+            
+            print(df[self.TIME_COL][0])
+            try:
+                df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , format=self.dateformat)
+            except:
+                print('provided date format not working, trying to infer it automatically') 
+                df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , infer_datetime_format=True)
             # compute time delta between measures
             # WARNING : the points need to be regurlarly sampled with a constant frequency
             df['delta_time'] = (df['TIME_COL2']-df['TIME_COL2'][0])   
             # convert time to minute
             df['delta_time'] = df['delta_time'].dt.total_seconds() / 60 # minutes 
+
+            
 
         # print(df.head())
 

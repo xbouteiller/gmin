@@ -111,8 +111,13 @@ class ParseTreeFolder():
 
         self.rwc_sup = rwc_sup
         self.rwc_inf = rwc_inf
+        
+        self.rwc_sup_default = rwc_sup
+        self.rwc_inf_default = rwc_inf
 
         self.screen_move = screen_move
+
+        self.batchactivated = 'NoBbatch'
 
        
 
@@ -198,7 +203,8 @@ class ParseTreeFolder():
         "2": self._execute_computation,
         "3": self._execute_computation,
         "4": self._batch_mode,
-        "5": self._quit
+        "5": self._quit,
+        "6": self._removerep
         }    
 
     def _batch(self):
@@ -280,7 +286,7 @@ class ParseTreeFolder():
         3. Compute gmin between RWC boundaries (full auto)
         4. Batch mode
         5. Exit
-
+        6. Remove output rep
 
         """)
     
@@ -324,6 +330,23 @@ class ParseTreeFolder():
                     print("{0} is not a valid choice".format(choice))
                     self.run()
                 self.firstchoice += 1
+    
+    def _removerep(self):
+        import shutil
+
+        path = [os.getcwd()]
+
+
+        for p in path:
+            genobj = os.walk(p)#gives you a generator function with all directorys
+
+            nfold=0
+            for _, dirlist, _ in genobj:
+                for i in dirlist: #checking if a folder called 1 exsists 
+                    if re.search(r'output|batch', i):
+                        shutil.rmtree(p+'/'+i)
+                        nfold+=1
+                        print('n of removed folder : {}'.format(nfold))
 
 
     def _quit(self):
@@ -348,6 +371,9 @@ class ParseTreeFolder():
         return dffile
 
     def _construct_file(self, df):
+        '''
+        calculate the mean of T° & RH, then drop the columns not useful
+        '''
         #print(df.head())  
         colagreg = self.col_campaign + self.col_comment + self.col_T + self.col_RH
         test = [i in df.columns for i in colagreg]
@@ -366,6 +392,9 @@ class ParseTreeFolder():
         return df
 
     def _check_metadata(self, df):
+        '''
+        check if meta data file contains all the needed columns
+        '''
         dfmeta = self._evaluate_file(elem = self.metadata_path, skip = 0)
    
         expectedcol = [self.SAMPLE_ID , 'position', 'species', self.AREA , self.PATM, self.FW , self.DW  , 'rwc_sup' , 'rwc_inf' , 'a', 'b', 'c', 'd', 'e', 'eps', 'p0', 'TLP']
@@ -442,8 +471,20 @@ class ParseTreeFolder():
             self.outputpath = os.getcwd()            
 
         if self.batchactivated == 'batch':
-            if not os.path.exists(os.path.join(self.outputpath, 'batch')): 
-                self.outputpath = os.path.join(self.outputpath, 'batch')
+            
+            incr = 0
+            if self.stopfold < 2:
+                while True:                                   
+                    if not os.path.exists(os.path.join(self.outputpath, 'batch'+'_'+str(incr))):                        
+                        os.makedirs(os.path.join(self.outputpath, 'batch'+'_'+str(incr)))
+                        break
+                    else:
+                        incr+=1
+                self.outputpath2 = os.path.join(self.outputpath, 'batch'+'_'+str(incr)) 
+            self.stopfold +=1
+        else:
+            self.outputpath2 = self.outputpath
+
 
         try:
             self.fig_folder
@@ -455,7 +496,7 @@ class ParseTreeFolder():
             i = 0
             while True:
                 i+=1
-                fig_folder = os.path.join(self.outputpath,starting_name+'_'+str(i))
+                fig_folder = os.path.join(self.outputpath2,starting_name+'_'+str(i))
                 if not os.path.exists(fig_folder):
                     os.makedirs(fig_folder)
                     os.makedirs(fig_folder+'/'+'gmin')
@@ -470,7 +511,7 @@ class ParseTreeFolder():
             self.rep_name = 'None'
         
         if self.rep_name == 'None':
-            starting_name = os.path.join(self.outputpath,str(d4)+'_'+'output_files')
+            starting_name = os.path.join(self.outputpath2,str(d4)+'_'+'output_files')
             i = 0
             while True:
                 i+=1
@@ -480,11 +521,15 @@ class ParseTreeFolder():
                     break
             self.rep_name = temp_name
 
-    def _match_metadata(self, df, pos):            
+    def _match_metadata(self, df, pos): 
+        '''
+        match the metadata file with the sliced df containing data
+        '''          
 
         df = pd.merge(df, self.dfmeta, on="position")
-        df = df.dropna(subset = [self.TIME_COL]).reset_index(drop= True)
         df = df.rename(columns = {pos:self.YVAR})
+        df = df.dropna(subset = [self.YVAR]).reset_index(drop=True)
+        
         print(df.head())
         return df
 
@@ -548,6 +593,16 @@ class ParseTreeFolder():
                         # Analysing
                         print('Analysing: {}'.format(self.sample))
 
+                        if self.batchactivated != 'batch':
+
+                            if df['rwc_sup'].notnull().values.any():
+                                self.rwc_sup = df['rwc_sup'][0]
+                                print('use user defined rwcsup value {}'.format(self.rwc_sup))
+                                time.sleep(1)
+                            if df['rwc_inf'].notnull().values.any():   
+                                self.rwc_inf = df['rwc_inf'][0]
+                        print( self.rwc_sup,  self.rwc_inf)
+                        time.sleep(1)
                         # initialising gmin computation class
                         gmc = gminComput(self.TIME_COL,
                                         self.SAMPLE_ID,
@@ -567,6 +622,11 @@ class ParseTreeFolder():
                                         self.dateformat)
                         # computing time delta
                         df = gmc._compute_time_delta(df)
+
+                        if self.batchactivated != 'batch':
+
+                            self.rwc_sup = self.rwc_sup_default
+                            self.rwc_inf = self.rwc_inf_default
 
                         # computing RWC
                         if 1>0:#(self.action_choice == '2') | (self.action_choice == '3'):
@@ -703,17 +763,56 @@ class ParseTreeFolder():
         # pd.concat(list_of_df).reset_index().explode('Interval_time').drop_duplicates(subset=['Campaign','index','Sample_ID','slope']).to_csv(self.rep_name+'/RMSE_df_complete_full_No_duplicates.csv')
         pd.concat(list_of_df).reset_index().drop_duplicates(subset=['Campaign','index','Sample_ID','slope']).drop(columns='index').to_csv(self.rep_name+'/GMIN_df_complete.csv', index = False)
 
+    def _agreg_batch(self):
+        listOfFiles = []
+
+        def _listdir_fullpath(p, s):
+            '''
+            method for creating a list of csv file
+            '''
+
+            d=os.path.join(p, s)
+            return [os.path.join(d, f) for f in os.listdir(d) if f == 'GMIN_df_complete.csv']
+
+        for pa, subdirs, files in os.walk(self.outputpath2):
+            for s in subdirs:
+                #print(s)
+                listOfFiles.extend(_listdir_fullpath(p=pa, s=s))
+
+
+
+        df_final = pd.read_csv(listOfFiles[0])
+
+        for i in range(len(listOfFiles)):
+            dftemp = pd.read_csv(listOfFiles[i])
+            df_final = pd.concat([df_final, dftemp])
+
+        df_final.to_csv(os.path.join(self.outputpath2,'agregatedGmin.csv'))
+        print('Batch data file saved')
+
     def _batch_mode(self):
         self.action_choice = '3'
         self.batchactivated = 'batch'
-     
+
+        # needed for avoiding to create new batch folder
+        self.stopfold = 1
+
         for rwc in range(self.limsup, self.liminf, -self.lag):
             #print(rwc)
             self.rwc_sup = rwc + self.delta//2
             self.rwc_inf = rwc - self.delta//2
-            self._execute_computation()
+            try:
+                print( self.rwc_sup,  self.rwc_inf)
+                time.sleep(1)
+                self._execute_computation()
+            except:
+                print('failed to compute for {} between rwc {} and rwc {}'.format(self.sample, self.rwc_sup, self.rwc_inf))
+                pass
+            # reisntantiate fig and df output folder name
+            self.rep_name = 'None'
+            self.fig_folder = 'None'      
 
-        # HERE MERGE FILE
+        self._agreg_batch()
         
 
                         

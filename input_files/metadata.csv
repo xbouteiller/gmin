@@ -1,2 +1,8 @@
 sample_ID,position,species,Area_m2,Patm,Fresh_weight,Dry_weight,rwc_sup,rwc_inf,a,b,c,d,e,eps,p0,TLP
-essai,A_01,pp,10,102,244,2425,80,50,,,,,,,2,
+essai1,A_01,pp,10,102,244,24,80,50,,,,,,,2,
+essai2,A_02,pp,11,103,245,25,40,30,,,,,,,3,
+essai3,A_03,pp,12,104,,,45,25,,,,,,,4,
+essai4,A_04,pp,13,105,,,,,,,,,,,5,
+essai5,A_05,pp,14,106,248,28,,,,,,,,,6,
+essai6,A_06,pp,15,107,249,29,85,55,,,,,,,7,
+essai9,A_09,pp,15,107,249,29,85,55,,,,,,,7,
