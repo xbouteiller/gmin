@@ -1,1 +1,2 @@
-sample_ID,position,species,area,patm,fresh_weight,dry_weight,rwc_sup,rwc_inf,a,b ,c,d,e ,eps,p0,TLP
+sample_ID,position,species,Area_m2,Patm,Fresh_weight,Dry_weight,rwc_sup,rwc_inf,a,b,c,d,e,eps,p0,TLP
+essai,A_01,pp,10,102,244,2425,80,50,,,,,,,2,

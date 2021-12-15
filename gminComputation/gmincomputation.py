@@ -39,7 +39,8 @@ class gminComput(ParseTreeFolder):
                 repfolder,
                 fresh_weight,
                 dry_weight,
-                screen_move):
+                screen_move,
+                dateformat):
 
         self.TIME_COL = time_col
         self.SAMPLE_ID = sample_id
@@ -61,6 +62,8 @@ class gminComput(ParseTreeFolder):
         self.rep_name = repfolder
 
         self.screen_move = screen_move
+
+        self.dateformat = dateformat
     
     def _get_valid_input(self, input_string, valid_options):
             '''
@@ -111,7 +114,7 @@ class gminComput(ParseTreeFolder):
             df['delta_time']
         except:
             print('delta time column is leaking ... computing ...')
-            df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , infer_datetime_format=True)  
+            df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , format=self.dateformat)  
             # compute time delta between measures
             # WARNING : the points need to be regurlarly sampled with a constant frequency
             df['delta_time'] = (df['TIME_COL2']-df['TIME_COL2'][0])   
