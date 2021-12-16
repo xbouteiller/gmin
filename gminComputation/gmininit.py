@@ -154,12 +154,12 @@ class ParseTreeFolder():
             self.metadata_path = self.parser.get("optional", "metadata") 
             self.file_or_folder = '1'
         else:
-            print('''
-            >>> What do you want to do ? 
-            1: Parse all files from a folder
-            2: Select some ID from a file)
-            ''')        
-            self.file_or_folder = self._get_valid_input('What do you want to do ? Choose one of : ', ('1','2'))
+            # print('''
+            # >>> What do you want to do ? 
+            # 1: Parse all files from a folder
+            # 2: Select some ID from a file)
+            # ''')        
+            self.file_or_folder = '1' #self._get_valid_input('What do you want to do ? Choose one of : ', ('1','2'))
 
             print('''
             >>> Select the folder or the file that will be analyzed       

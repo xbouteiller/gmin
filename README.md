@@ -31,11 +31,11 @@ You can directly use the files from the climatic chambers. The following columns
 - Relative Humidity
 - Weight measured
 
-Names can be defined (see the conf file section), i f several sensors are used for measuring temperature or RH, mean value will be computed.
-
 you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
-### A metadata file is mandatary
+Names can be user defined (see the conf file section), if several sensors are used for measuring temperature or RH, mean value will be computed.
+
+### A metadata file is mandatory
 
 It must necessarly contains the following columns:
 
@@ -54,9 +54,10 @@ Following columns must be in metadatafile but can be empty. If empty a default b
 - eps, p0
 - TLP
 
-Note that if you name your file : **metadata.csv**, it can be included in the data folder
-
 you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
+
+
+Note that if you name your file : **metadata.csv**, it can be included in the data folder
 
 ### A conf file is needed
 
@@ -66,6 +67,9 @@ A file named conf.cfg is expected in the program folder. It can be modified by t
 -**optional** section contains info for executing the program without prompting the menu, **use_opt** should be turned to True is you want to use
 -**batch** parameters for the batch mode
 
+Future version will allow the user to place its own conf file with the data
+
+<br> </br>
 
 ## How to install?
 
@@ -128,8 +132,8 @@ In a terminal
 
 #### Step 1
 1. The program ask to chose:
-    - A folder that will be parsed 
-    - Some unique ID from a single file
+    - A folder that will be parsed for the data files
+    - A metatadata file
 <img src="img/Screenshot from 2021-04-28 15-38-37.png" width="75%" height="75%">
 
 The program writes the number of files found
@@ -139,6 +143,7 @@ The program writes the number of files found
 2. You have to chose which method you will use:
     - Select time interval manually then compute gmin in the interval time
     - Filtering the data based on RWC and then compute gmin in the interval time
+    - Batch mode
 <img src="img/Screenshot from 2021-04-28 15-39-13.png" width="75%" height="120%">
 
 #### Step 3 - Option 1
@@ -153,19 +158,26 @@ The program writes the number of files found
     - the semi auto method will plot curve each time
     - the full auto will precede to the gmin computation automatically
 
+#### Step 3 - Option 3
+4. If you chose the batch method:
+    - A sliding RWC window is used to filter the files. Except that it is similar to the RWC method
+    - Generated files are agregated within the same csv file
 
 5. The data are first filtered based on RWC:
 <img src="img/VIAL12.png" width="75%" height="75%">
 
-Default values for the RWC filtering are 80% and 50%, but thsi can be changed manually:
+Default values for the RWC filtering are 80% and 50%, but this can be changed manually:
 >
 > python gminExec.py --rwc_sup 90 --rwc_inf 20 # Superior threshold : 90%, inferior : 20%  
 > 
-> python gminExec.py -rs 90 -ri 20 # It is a shortcut for the code above
->
 
-6. **New** if the columns Dry_weight and Fresh_weight are provided, he software use the provided values to compute RWC    
+or in the metadata file for each sample.
 
+6. If the columns Dry_weight and Fresh_weight are provided, he software use the provided values to compute RWC 
+
+7. **New** if values are provided in the column a, b, c, d, e the leaf shrinkage is corrected using the formula
+
+\sum_{\forall i}{x_i^{2}}
 
 7. Gmin is computed based on a linear regression between the two boundaries of the RWC filtered data
 <img src="img/VIAL12 g.png" width="75%" height="75%">
