@@ -1,4 +1,4 @@
-# Python Program for computing leaf conductance
+# gminComputation : a Python Program for estimating leaf conductance
 
 
 Current version is: **2.0**
@@ -22,14 +22,16 @@ Program flow:
 
 ### Work directly from raw files
 
-You can directly use the files from the climatic chambers. 
-It should contain at least the following columns:
-- date_time : time **(default is dd/mm/yyyy H:M)**
-- Campaign: campaign name
+You can directly use the files from the climatic chambers. The following columns are mandatory:
+
+- date_time 
+- Campaign
 - Comment
-- T_C : temperature (°C)
-- RH : Relative Humidity
-- Weight measured: 1 column = 1 sample, the column header should be the position in the chamber
+- Temperature
+- Relative Humidity
+- Weight measured
+
+Names can be defined (see the conf file section), i f several sensors are used for measuring temperature or RH, mean value will be computed.
 
 you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
@@ -37,21 +39,24 @@ you can see an example in the folder [input files](https://github.com/xbouteille
 
 It must necessarly contains the following columns:
 
-- sample_ID : ID of the sample, should be **unique** for each sample
-- position : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
-- Area_m2 : area of the leaf (m2)
-- Patm : atmospheric pressure (KPa)
+- sample_ID :
+- position 
+- Area_m2 
+- Patm 
 
-Following columns must be in metadatafile but can be empty, if empty a default behaviour is adopted
-- Fresh_weight : fresh (saturated) weight of the leaf (g)
-- Dry_weight : dry weight of the leaf (g)
-- rwc_sup: superior threshold for filtering rwc
-- rwc_inf: inferior threshold for filtering rwc
-- a, b, c, d, e: parameters for computing leaf shrinkage
-- eps, p0: parameters for correcting VPD
+Following columns must be in metadatafile but can be empty. If empty a default behaviour is adopted.
+
+- Fresh_weight 
+- Dry_weight 
+- rwc_sup
+- rwc_inf
+- a, b, c, d, e
+- eps, p0
 - TLP
 
 Note that if you name your file : **metadata.csv**, it can be included in the data folder
+
+you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
 ### A conf file is needed
 
@@ -180,18 +185,30 @@ Columns should be named as follows:
 
 #### Quantitative columns
 
-- weight_g : leaf weight as a function of time (g)
+- date_time : time **(default is dd/mm/yyyy H:M)**
+- Campaign: campaign name
+- Comment
 - T_C : temperature (°C)
 - RH : Relative Humidity
-- Patm : atmospheric pressure (KPa)
-- Area_m2 : area of the leaf (m2)
-- Fresh_weight : fresh (saturated) weight of the leaf (g)
-- Dry_weight : dry weight of the leaf (g)
+- Weight measured : 1 column for each sample, the column header should match with the position in the metadata file.
 
 #### Qualitative columns
 
-- campaign : campaign name
-- sample_ID : ID of the sample, should be unique for each sample
+
+- sample_ID : ID of the sample, should be **unique** for each sample
+- position : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
+- Area_m2 : area of the leaf (m2)
+- Patm : atmospheric pressure (KPa)
+
+Following columns must be in metadatafile but can be empty, if empty a default behaviour is adopted
+- Fresh_weight : fresh (saturated) weight of the leaf (g)
+- Dry_weight : dry weight of the leaf (g)
+- rwc_sup: superior threshold for filtering rwc
+- rwc_inf: inferior threshold for filtering rwc
+- a, b, c, d, e: parameters for computing leaf shrinkage
+- eps, p0: parameters for correcting VPD
+- TLP
+
 
 #### Date
 
