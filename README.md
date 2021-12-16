@@ -175,15 +175,19 @@ or in the metadata file for each sample.
 
 6. If the columns Dry_weight and Fresh_weight are provided, he software use the provided values to compute RWC 
 
-7. **New** if values are provided in the column a, b, c, d, e the leaf shrinkage is corrected using the formula
+7. **New** if values are provided in the column a, b, c, d, e the leaf shrinkage is corrected using the formula:
 
-\sum_{\forall i}{x_i^{2}}
+<a href="https://www.codecogs.com/eqnedit.php?latex=a&space;&plus;&space;b&space;\times&space;rwc&plus;&space;c&space;\times&space;rwc^2&space;&plus;d&space;\times&space;rwc^3&space;&plus;&space;e&space;\times&space;rwc^4" target="_blank"><img src="https://latex.codecogs.com/gif.latex?a&space;&plus;&space;b&space;\times&space;rwc&plus;&space;c&space;\times&space;rwc^2&space;&plus;d&space;\times&space;rwc^3&space;&plus;&space;e&space;\times&space;rwc^4" title="a + b \times rwc+ c \times rwc^2 +d \times rwc^3 + e \times rwc^4" /></a>
 
-7. Gmin is computed based on a linear regression between the two boundaries of the RWC filtered data
+8. **New** if values are provided in the column eps, p0 the vpd is corrected using the formula:
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=WP=p_0/(\dfrac&space;{\overline{RWC}}{100})&plus;&space;max(-p_0-\varepsilon&space;\times(1-&space;\dfrac&space;{\overline{RWC}}{100}),0)&space;\newline&space;\newline&space;\newline&space;VPD&space;=&space;611.21&space;\times&space;e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14&plus;\overline{T})}&space;\times&space;e^{(WP\times2.16947115/(\overline{T}&plus;273.15))-\overline{RH}/100)}/1000" target="_blank"><img src="https://latex.codecogs.com/gif.latex?WP=p_0/(\dfrac&space;{\overline{RWC}}{100})&plus;&space;max(-p_0-\varepsilon&space;\times(1-&space;\dfrac&space;{\overline{RWC}}{100}),0)&space;\newline&space;\newline&space;\newline&space;VPD&space;=&space;611.21&space;\times&space;e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14&plus;\overline{T})}&space;\times&space;e^{(WP\times2.16947115/(\overline{T}&plus;273.15))-\overline{RH}/100)}/1000" title="WP=p_0/(\dfrac {\overline{RWC}}{100})+ max(-p_0-\varepsilon \times(1- \dfrac {\overline{RWC}}{100}),0) \newline \newline \newline VPD = 611.21 \times e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14+\overline{T})} \times e^{(WP\times2.16947115/(\overline{T}+273.15))-\overline{RH}/100)}/1000" /></a>
+
+9. Gmin is computed based on a linear regression between the two boundaries of the RWC filtered data
 <img src="img/VIAL12 g.png" width="75%" height="75%">
 
 #### Step 5
-8. Synthetic figures and data frames are saved within the output_fig and output_files folder
+10. Synthetic figures and data frames are saved within the output_fig and output_files folder or batch folder if batch mode was used
 
 <br> </br>
 
