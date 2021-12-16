@@ -391,7 +391,7 @@ class ParseTreeFolder():
         '''
         dfmeta = self._evaluate_file(elem = self.metadata_path, skip = 0)
    
-        expectedcol = [self.SAMPLE_ID , 'position', 'species', self.AREA , self.PATM, self.FW , self.DW  , 'rwc_sup' , 'rwc_inf' , 'a', 'b', 'c', 'd', 'e', 'eps', 'p0', 'TLP']
+        expectedcol = [self.SAMPLE_ID , 'position', 'species', 'site', self.AREA , self.PATM, self.FW , self.DW  , 'rwc_sup' , 'rwc_inf' , 'a', 'b', 'c', 'd', 'e', 'eps', 'p0', 'TLP']
         
         test = [i in dfmeta.columns for i in expectedcol]
         assert all(test), 'Expecting missing column(s): {} in metadata file, please add it, even if empty'.format(list(compress(expectedcol,[not elem for elem in test])))
@@ -521,8 +521,7 @@ class ParseTreeFolder():
 
         df = pd.merge(df, self.dfmeta, on="position")
         df = df.rename(columns = {pos:self.YVAR})
-        df = df.dropna(subset = [self.YVAR]).reset_index(drop=True)
-        
+        df = df.dropna(subset = [self.YVAR]).reset_index(drop=True)        
         
         return df
 
@@ -733,9 +732,10 @@ class ParseTreeFolder():
 
                         # re order columns
                         temp_df['Campaign'] = temp_folder
-
+                        temp_df['Species'] = df['species']             
+                        temp_df['Site'] = df['site']
                         temp_df = temp_df.drop(columns='Interval_time')
-                        temp_df = temp_df[['Campaign','Sample_ID', 'Gmin_mean', 'percentage_rwc_sup', 'percentage_rwc_inf', 'time_sup', 'time_inf', 'method_of_rwc', \
+                        temp_df = temp_df[['Campaign','Species','Site','Sample_ID', 'Gmin_mean', 'percentage_rwc_sup', 'percentage_rwc_inf', 'time_sup', 'time_inf', 'method_of_rwc', \
                                             'slope', 'Rsquared', 'shrinkage','VPD_cor', 'K', 'VPD', 'mean_T', 'mean_RH', 'mean_Patm', 'mean_area', 'a', 'b', 'c', 'd', 'e', 'eps', 'p0']]                 
 
                         
@@ -745,6 +745,7 @@ class ParseTreeFolder():
                             temp_df['Mode']='Manual Selection'
 
                         print('\n')
+                        logging.debug(temp_df.head())
 
                         # append df to list
                         list_of_df.append(temp_df)

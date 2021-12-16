@@ -45,7 +45,9 @@ you can see an example in the section [input files](https://github.com/xbouteill
 
 ### A metadata file is mandatory
 
-It must necessarly contains the following columns, with these **exact names**:
+All the columns must have the **exact current names** indicated
+
+The following columns must be filled, if not, it will raise an Error
 
 - **sample_ID** : ID of the sample, should be **unique** for each sample
 - **position** : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
@@ -53,6 +55,8 @@ It must necessarly contains the following columns, with these **exact names**:
 - **Patm** : atmospheric pressure (KPa)
 
 Following columns must be in metadatafile but can be empty, if empty a default behaviour is adopted
+- **Species**
+- **site**
 - **Fresh_weight** : fresh (saturated) weight of the leaf (g)
 - **Dry_weight** : dry weight of the leaf (g)
 - **rwc_sup**: superior threshold for filtering rwc
