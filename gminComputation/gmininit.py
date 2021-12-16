@@ -26,7 +26,7 @@ from itertools import compress
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
 logging.getLogger('matplotlib.font_manager').disabled = True
-logging.disable(logging.ERROR)
+logging.disable(logging.DEBUG)
 
 time.sleep(0.5)
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
@@ -791,6 +791,10 @@ class ParseTreeFolder():
     def _batch_mode(self):
         self.action_choice = '3'
         self.batchactivated = 'batch'
+
+        
+        logging.info('Start from: {}, until: {} with a lag: {} and a delta: {}'.format(self.limsup, self.liminf,self.lag, self.delta))
+        
 
         # needed for avoiding to create new batch folder
         self.stopfold = 1

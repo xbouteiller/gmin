@@ -21,9 +21,9 @@ from tkinter.filedialog import askopenfilename, askdirectory
 import logging
 logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
 logging.getLogger('matplotlib.font_manager').disabled = True
+logging.disable(logging.DEBUG)
 
 logging.debug('Start of gmin computation')
-logging.disable(logging.ERROR)
 
 from .gmininit import ParseTreeFolder
 
@@ -196,8 +196,8 @@ class gminComput(ParseTreeFolder):
                 saturated = np.nanmean(df[self.FW].values[0:nmean])## or np.max() ??        
             logging.debug('Using provided dry and fresh weight')
             method_of_dfw = 'provided_dry_fresh_weight'
-            logging.info('dry: {}'.format(dry))
-            logging.info('fresh: {}'.format( saturated))
+            logging.info('dry: {}g'.format(dry))
+            logging.info('fresh: {}g'.format( saturated))
             # print('nan dry: ', np.isnan(dry))
             if np.isnan(dry) or np.isnan(saturated):
                 logging.error('Dry or Fresh weight should not be Nan') 
@@ -322,7 +322,7 @@ class gminComput(ParseTreeFolder):
         # print('action choice', self.action_choice )
 
         if self.action_choice !=  '1':
-            logging.info('Slicing df between RWC80 and RWC50')
+            logging.debug('Slicing df between RWC80 and RWC50')
             # df = df[(rwc < rwc_thressup) & (rwc > rwc_thresinf)].copy()
             # df_bak = df.copy()
             df = df[ (df.delta_time.values <= t50) & (df.delta_time.values >= t80)].copy()

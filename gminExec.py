@@ -109,14 +109,14 @@ if __name__=="__main__":
     # assert rwc_inf+rwc_sup < 100, 'sum of rwc boundaries should be < 100'
     assert rwc_inf < rwc_sup, 'rwc boundary inf should be < to rwc boundary sup'
 
-    print('\n')
-    print('Parametrizable parameters are :')
-    print('--------------------------------\n')
+    # print('\n')
+    # print('Parametrizable parameters are :')
+    # print('--------------------------------\n')
 
-    for arg in vars(args):
-        print(arg,' : ', getattr(args, arg))
+    # for arg in vars(args):
+    #     print(arg,' : ', getattr(args, arg))
     
-    print('\n')
+    # print('\n')
 
 
     parse_folder = ParseTreeFolder(time_col = time_col,

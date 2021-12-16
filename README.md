@@ -3,15 +3,56 @@
 
 Current version is: **2.0**
 
-<img src="img/B17_LITU_BL_11.png" width="75%" height="75%">
+<img src="img/B22_LITU_BL_09.png" width="75%" height="75%">
 
-**NEW: you can now provide dry and fresh weight in the data frame to compute RWC: see sections program flow step3 and data format below**
+
+
+## A new version of Gmin
+
+### Work directly from raw files
+
+You can directly use the files from the climatic. 
+It should contain at least the following columns:
+- date_time : time **(default is dd/mm/yyyy H:M)**
+- Campaign: campaign name
+- Comment
+- T_C : temperature (°C)
+- RH : Relative Humidity
+- Weight measured: 1 column = 1 sample, the column header should be the 
+
+you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
+
+#### A metadata file is mandatary
+
+It must necessarly contains the following columns:
+
+- sample_ID : ID of the sample, should be **unique** for each sample
+- position : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
+- Area_m2 : area of the leaf (m2)
+- Patm : atmospheric pressure (KPa)
+
+Following columns must be in metadatafile but can be empty, if empty a default behaviour is adopted
+- Fresh_weight : fresh (saturated) weight of the leaf (g)
+- Dry_weight : dry weight of the leaf (g)
+- rwc_sup: superior threshold for filtering rwc
+- rwc_inf: inferior threshold for filtering rwc
+- a, b, c, d, e: parameters for computing leaf shrinkage
+- eps, p0: parameters for correcting VPD
+- TLP
+
+Note that if you name your file : **metadata.csv**, it can be included in the data folder
+
+#### A conf file is needed
+
+A file named conf.cfg is expected in the program folder. It can be modified by the user
+[config] section is mandatory
+[optional] section contains info for executing the program without prompting the menu, **use_opt** should be set to True is you want to use
+[batch] is only useful for the batch mode
+
 
 ## How to install?
 
 ### Install Python version if needed
-
-[Anaconda](https://www.anaconda.com/products/individual)
 
 [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
@@ -25,7 +66,7 @@ From the green box  named 'clone' in the right corner > download .zip
 2. From the terminal
 
 >
-> git clone https://github.com/xbouteiller/gminComputation.git
+> git clone https://github.com/xbouteiller/gmin.git
 >
 
 
@@ -47,9 +88,8 @@ Open a terminal in the DetectEvent folder, then :
 
 ### Program Execution
 
-Copy the file **gminExec.py** in the desired folder
 
-Then open a terminal 
+In a terminal 
 
 
 >
