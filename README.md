@@ -3,11 +3,23 @@
 
 Current version is: **2.0**
 
-<img src="img/B22_LITU_BL_09.png" width="75%" height="75%">
-
-
+<img src="img/B22_LITU_BL_09.png" width="65%" height="65%">
 
 ## A new version of Gmin
+
+
+### Highlights
+
+Improvement of gmin estimation:
+- VPD can be corrected
+- Leaf shrinkage can be corrected
+
+Program flow:
+- Work directly frow raw files
+- A batch mode is implemented
+- Conf file can be used
+
+
 
 ### Work directly from raw files
 
@@ -22,7 +34,7 @@ It should contain at least the following columns:
 
 you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
-#### A metadata file is mandatary
+### A metadata file is mandatary
 
 It must necessarly contains the following columns:
 
@@ -42,12 +54,12 @@ Following columns must be in metadatafile but can be empty, if empty a default b
 
 Note that if you name your file : **metadata.csv**, it can be included in the data folder
 
-#### A conf file is needed
+### A conf file is needed
 
 A file named conf.cfg is expected in the program folder. It can be modified by the user
-[config] section is mandatory
-[optional] section contains info for executing the program without prompting the menu, **use_opt** should be set to True is you want to use
-[batch] is only useful for the batch mode
+-[config] section is mandatory
+-[optional] section contains info for executing the program without prompting the menu, **use_opt** should be set to True is you want to use
+-[batch] is only useful for the batch mode
 
 
 ## How to install?
