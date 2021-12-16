@@ -29,7 +29,7 @@ It should contain at least the following columns:
 - Comment
 - T_C : temperature (°C)
 - RH : Relative Humidity
-- Weight measured: 1 column = 1 sample, the column header should be the 
+- Weight measured: 1 column = 1 sample, the column header should be the position in the chamber
 
 you can see an example in the folder [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
@@ -55,10 +55,11 @@ Note that if you name your file : **metadata.csv**, it can be included in the da
 
 ### A conf file is needed
 
-A file named conf.cfg is expected in the program folder. It can be modified by the user
--[config] section is mandatory
--[optional] section contains info for executing the program without prompting the menu, **use_opt** should be turned to True is you want to use
--[batch] parameters for the batch mode
+A file named conf.cfg is expected in the program folder. It can be modified by the user.
+
+-**config** section is mandatory
+-**optional** section contains info for executing the program without prompting the menu, **use_opt** should be turned to True is you want to use
+-**batch** parameters for the batch mode
 
 
 ## How to install?
