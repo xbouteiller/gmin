@@ -9,12 +9,14 @@ Current version is: **2.0**
 
 Improvement of gmin estimation:
 - VPD can be corrected
+<a href="https://www.codecogs.com/eqnedit.php?latex=WP=p_0/(\dfrac&space;{\overline{RWC}}{100})&plus;&space;max(-p_0-\varepsilon&space;\times(1-&space;\dfrac&space;{\overline{RWC}}{100}),0)&space;\newline&space;\newline&space;\newline&space;VPD&space;=&space;611.21&space;\times&space;e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14&plus;\overline{T})}&space;\times&space;e^{(WP\times2.16947115/(\overline{T}&plus;273.15))-\overline{RH}/100)}/1000" target="_blank"><img src="https://latex.codecogs.com/gif.latex?WP=p_0/(\dfrac&space;{\overline{RWC}}{100})&plus;&space;max(-p_0-\varepsilon&space;\times(1-&space;\dfrac&space;{\overline{RWC}}{100}),0)&space;\newline&space;\newline&space;\newline&space;VPD&space;=&space;611.21&space;\times&space;e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14&plus;\overline{T})}&space;\times&space;e^{(WP\times2.16947115/(\overline{T}&plus;273.15))-\overline{RH}/100)}/1000" title="WP=p_0/(\dfrac {\overline{RWC}}{100})+ max(-p_0-\varepsilon \times(1- \dfrac {\overline{RWC}}{100}),0) \newline \newline \newline VPD = 611.21 \times e^{(18.678-\overline{T}/234.5)\times\overline{T}/(257.14+\overline{T})} \times e^{(WP\times2.16947115/(\overline{T}+273.15))-\overline{RH}/100)}/1000" /></a>
 - Leaf shrinkage can be corrected
+<a href="https://www.codecogs.com/eqnedit.php?latex=a&space;&plus;&space;b&space;\times&space;rwc&plus;&space;c&space;\times&space;rwc^2&space;&plus;d&space;\times&space;rwc^3&space;&plus;&space;e&space;\times&space;rwc^4" target="_blank"><img src="https://latex.codecogs.com/gif.latex?a&space;&plus;&space;b&space;\times&space;rwc&plus;&space;c&space;\times&space;rwc^2&space;&plus;d&space;\times&space;rwc^3&space;&plus;&space;e&space;\times&space;rwc^4" title="a + b \times rwc+ c \times rwc^2 +d \times rwc^3 + e \times rwc^4" /></a>
 
 Program flow:
 - Work directly frow raw files
 - A batch mode is implemented
-- Conf file can be used
+- A Conf file is used and can modfied
 
 <br> </br>
 

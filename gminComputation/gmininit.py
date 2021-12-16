@@ -591,7 +591,7 @@ class ParseTreeFolder():
                         #time.sleep(2)                        
 
                         self.sample = df[self.SAMPLE_ID].unique()[0]
-                        logging.debug(self.sample)
+                        logging.info(self.sample)
                        
                         df_bak = df.copy()
                         # Analysing

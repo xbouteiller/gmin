@@ -194,7 +194,7 @@ class gminComput(ParseTreeFolder):
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 dry = np.nanmean(df[self.DW].values[-int(nmean):])
                 saturated = np.nanmean(df[self.FW].values[0:nmean])## or np.max() ??        
-            logging.debug('Using provided dry and fresh weight')
+            logging.info('Using provided dry and fresh weight')
             method_of_dfw = 'provided_dry_fresh_weight'
             logging.info('dry: {}g'.format(dry))
             logging.info('fresh: {}g'.format( saturated))
