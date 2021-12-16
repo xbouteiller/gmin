@@ -30,41 +30,40 @@ See the last section for more details about how to use the program
 
 ### Work directly from raw files
 
-You can directly use the files from the climatic chambers. The following columns are mandatory:
+You can directly use the files from the climatic chambers. The following columns are mandatory, but names can be customized (in the conf file ), if several sensors are used for measuring temperature or RH, mean value will be computed.
 
-- date_time : time **(default is dd/mm/yyyy H:M)**
-- Campaign: campaign name
-- Comment
-- T_C : temperature (°C)
-- RH : Relative Humidity
-- Weight measured : 1 column for each sample, the column header should match with the position in the metadata file.
+- **date_time** : time **(default is dd/mm/yyyy H:M)**
+- **Campaign** : campaign name
+- **Comment**
+- **T_C** : temperature (°C)
+- **RH** : Relative Humidity
+- **Weight measured** : 1 column for each sample, the column header should match with the position in the metadata file.
 
 you can see an example in the section [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
-Names can be customized (see the conf file section), if several sensors are used for measuring temperature or RH, mean value will be computed.
+
 
 ### A metadata file is mandatory
 
-It must necessarly contains the following columns:
+It must necessarly contains the following columns, with these **exact names**:
 
-- sample_ID : ID of the sample, should be **unique** for each sample
-- position : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
-- Area_m2 : area of the leaf (m2)
-- Patm : atmospheric pressure (KPa)
+- **sample_ID** : ID of the sample, should be **unique** for each sample
+- **position** : the **unique** position in the climatic chamber, it should match the sample column header in the datafile
+- **Area_m2** : area of the leaf (m2)
+- **Patm** : atmospheric pressure (KPa)
 
 Following columns must be in metadatafile but can be empty, if empty a default behaviour is adopted
-- Fresh_weight : fresh (saturated) weight of the leaf (g)
-- Dry_weight : dry weight of the leaf (g)
-- rwc_sup: superior threshold for filtering rwc
-- rwc_inf: inferior threshold for filtering rwc
-- a, b, c, d, e: parameters for computing leaf shrinkage
-- eps, p0: parameters for correcting VPD
-- TLP
+- **Fresh_weight** : fresh (saturated) weight of the leaf (g)
+- **Dry_weight** : dry weight of the leaf (g)
+- **rwc_sup**: superior threshold for filtering rwc
+- **rwc_inf**: inferior threshold for filtering rwc
+- **a, b, c, d, e**: parameters for computing leaf shrinkage
+- **eps, p0**: parameters for correcting VPD
+- **TLP**
 
 you can see an example in the section [input files](https://github.com/xbouteiller/gmin/tree/main/input_files)
 
-
-Note that if you name your file : **metadata.csv**, it can be included in the data folder
+Note that if you named your file : **metadata.csv**, it can be included in the data folder
 
 ### A conf file is needed
 
