@@ -5,10 +5,7 @@ Current version is: **2.0**
 
 <img src="img/B22_LITU_BL_09.png" width="65%" height="65%">
 
-## A new version of Gmin
-
-
-### Highlights
+## Highlights 
 
 Improvement of gmin estimation:
 - VPD can be corrected
@@ -19,11 +16,13 @@ Program flow:
 - A batch mode is implemented
 - Conf file can be used
 
+<br> </br>
 
+## Using this new version of gmin
 
 ### Work directly from raw files
 
-You can directly use the files from the climatic. 
+You can directly use the files from the climatic chambers. 
 It should contain at least the following columns:
 - date_time : time **(default is dd/mm/yyyy H:M)**
 - Campaign: campaign name
@@ -58,8 +57,8 @@ Note that if you name your file : **metadata.csv**, it can be included in the da
 
 A file named conf.cfg is expected in the program folder. It can be modified by the user
 -[config] section is mandatory
--[optional] section contains info for executing the program without prompting the menu, **use_opt** should be set to True is you want to use
--[batch] is only useful for the batch mode
+-[optional] section contains info for executing the program without prompting the menu, **use_opt** should be turned to True is you want to use
+-[batch] parameters for the batch mode
 
 
 ## How to install?
@@ -103,32 +102,9 @@ Open a terminal in the DetectEvent folder, then :
 
 In a terminal 
 
-
 >
 > python gminExec.py
 >
-
-
-
-I also provided some additonal for simplifying execution in the **exec** folder
-
-if you are on a windows platform:
-
-- create a shorcut for the *launch.bat* file
-- place the shortcut in an ampty folder and double click on it
-- the program will be executed in the terminal and files & figures will be saved in the empy folder
-
-
-if you are on a linux platform:
-
-1. in the *bash-ex-linux.sh* file
-    - replace the path */home/xavier/anaconda3/bin/python* with the path linking to your python version 
-    - if you use anaconda you should have to replace only *xavier* with you user name
-    - replace the path */home/xavier/Documents/development/gmin/gminExec.py* with the correct path linking to the *gminExec.py* file
-2. in the *launch-linux.desktop*
-    - replace the path */home/xavier/Documents/development/gmin/exec/bash-ex-linux.sh* with the correct path to *bash-ex-linux.sh*
-    - you can now copy the *launch-linux.desktop* file in a new folder and double click on it
-
 
 
 ### Installing updates
