@@ -9,9 +9,6 @@ print('------------------------------------------------------------------------'
 
 import numpy as np
 import matplotlib.pyplot as plt
-# from scipy import signal
-# from loess.loess_1d import loess_1d
-# from statsmodels.nonparametric.smoothers_lowess import lowess
 import pandas as pd
 import time
 import sys
@@ -26,12 +23,16 @@ import configparser
 import json
 from itertools import compress
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+logging.getLogger('matplotlib.font_manager').disabled = True
+logging.disable(logging.ERROR)
+
 time.sleep(0.5)
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 
-# import matplotlib
-# matplotlib.use("Qt5agg")
 
+logging.debug('Start of program')
 
 
 class ParseFile():
@@ -127,20 +128,15 @@ class ParseTreeFolder():
         
         self._parse_conf() 
 
-        self.col_T = json.loads(self.parser.get("config", "col_T"))
-        #print(self.col_T)
+        logging.debug('Parsing conf file')
+
+        self.col_T = json.loads(self.parser.get("config", "col_T"))        
         self.col_RH = json.loads(self.parser.get("config", "col_RH"))
-        #print(self.col_RH)
         self.col_comment = json.loads(self.parser.get("config", "col_comment"))
-        #print(self.col_comment)
         self.col_campaign = json.loads(self.parser.get("config", "col_campaign"))
 
-        self.dateformat = self.parser.get("config", "dateformat")
-        #print(self.dateformat)
-        #time.sleep(1)
-        #print(self.col_campaign + self.col_comment)
+        self.dateformat = self.parser.get("config", "dateformat")  
         self.col_date = json.loads(self.parser.get("config", "col_date"))
-
         self.outputpath = self.parser.get("config", "outputpath")
 
         self.use_opt = self.parser.get("optional", "use_opt")
@@ -242,10 +238,10 @@ class ParseTreeFolder():
 
             # method with csv detection            
             try:
-                # basedir
+                
                 file_root = [os.path.join(self.path, f) for f in os.listdir(self.path) if f.endswith('.csv') and f.lower() != 'metadata.csv']
                 self.listOfFiles.append(file_root)
-                #print(file_root)
+               
             except:
                 print('no file detected within root directory')
                 pass
@@ -374,7 +370,7 @@ class ParseTreeFolder():
         '''
         calculate the mean of T° & RH, then drop the columns not useful
         '''
-        #print(df.head())  
+        
         colagreg = self.col_campaign + self.col_comment + self.col_T + self.col_RH
         test = [i in df.columns for i in colagreg]
         assert all(test), '{} is not in df column'.format(list(compress(colagreg,[not elem for elem in test])))
@@ -384,11 +380,9 @@ class ParseTreeFolder():
 
         assert len(self.col_date) == 1, 'col date should be be an unique column'
         df[self.TIME_COL] = df[self.col_date]
-
-        #print(df.columns)
+        
         df = df.drop(columns= colagreg)
-
-        #print(df.head())
+       
         return df
 
     def _check_metadata(self, df):
@@ -398,7 +392,7 @@ class ParseTreeFolder():
         dfmeta = self._evaluate_file(elem = self.metadata_path, skip = 0)
    
         expectedcol = [self.SAMPLE_ID , 'position', 'species', self.AREA , self.PATM, self.FW , self.DW  , 'rwc_sup' , 'rwc_inf' , 'a', 'b', 'c', 'd', 'e', 'eps', 'p0', 'TLP']
-        #print(dfmeta.columns)
+        
         test = [i in dfmeta.columns for i in expectedcol]
         assert all(test), 'Expecting missing column(s): {} in metadata file, please add it, even if empty'.format(list(compress(expectedcol,[not elem for elem in test])))
 
@@ -499,8 +493,7 @@ class ParseTreeFolder():
                 fig_folder = os.path.join(self.outputpath2,starting_name+'_'+str(i))
                 if not os.path.exists(fig_folder):
                     os.makedirs(fig_folder)
-                    os.makedirs(fig_folder+'/'+'gmin')
-                    # os.makedirs(fig_folder+'/'+'diff')
+                    os.makedirs(fig_folder+'/'+'gmin')                    
                     os.makedirs(fig_folder+'/'+'rwc')
                     break
             self.fig_folder = fig_folder 
@@ -530,7 +523,7 @@ class ParseTreeFolder():
         df = df.rename(columns = {pos:self.YVAR})
         df = df.dropna(subset = [self.YVAR]).reset_index(drop=True)
         
-        print(df.head())
+        
         return df
 
 
@@ -544,65 +537,76 @@ class ParseTreeFolder():
         
         from .gmincomputation import gminComput
 
-        print('\nchoices is {}\n'.format(self.action_choice ))
+        logging.debug('\nchoices is {}\n'.format(self.action_choice ))
 
         self._create_saving_folder()
 
-        dimfolder = len(self.listOfFiles)
-        # li_all = []
+        dimfolder = len(self.listOfFiles)        
         list_of_df = []
         global_score = []
 
         self.dfmeta = self._check_metadata(self.metadata_path)
-        # print(self.listOfFiles)
-        # time.sleep(2)
+        logging.debug(self.dfmeta.head())
 
-        for d in np.arange(0,dimfolder):
+
+        for di in np.arange(0,dimfolder):
             print('\n\n\n---------------------------------------------------------------------')
-            print(d)            
             
             try:
-                self.presentfile=self.listOfFiles[d][0]
+                self.presentfile=self.listOfFiles[di][0]
             except:
                 self.presentfile = 'No file'            
             
             print('parsing list of files from : {}'.format(self.presentfile))
 
             if self.presentfile != 'No file':
-                for elem in self.listOfFiles[d]:
+                for elem in self.listOfFiles[di]:
                     dffile = self._robust_import(elem)
                     # remove the .csv extension from the name                    
                     temp_folder = os.path.splitext(str(os.path.basename(elem)))[0]  
-                    # print('tf1: ', temp_folder)                 
+                                     
 
                     for pos in [c for c in dffile.columns if c != self.T and c != self.RH and c != self.TIME_COL]:
-                        assert pos in self.dfmeta.position.to_list(), 'position {} not in the column position of metadata file'.format(pos)
+                        try:                           
+                            assert pos in self.dfmeta.position.to_list(), 'position {} not in the column position of metadata file'.format(pos)
+                        except:
+                            logging.error('ERROR position {} not found in metadata'.format(pos))
+                            raise Exception
 
                         df = dffile.loc[:,[self.TIME_COL,self.T , self.RH, pos]]
                         
                         df[['position']] = pos
-                        print(df.head())
+                        logging.debug(df.head())
 
                         assert len(list(compress(self.dfmeta.position,self.dfmeta.position == pos))) == 1, 'More than one col have the same position' 
                         df = self._match_metadata(df, pos)
 
+                        abcde = df[['a', 'b', 'c', 'd', 'e']].values[0].tolist() 
+                        logging.debug('abcde: {}'.format(abcde)) 
+                        epsp0 = df[['eps', 'p0']].values[0].tolist() 
+                        logging.debug('abcde: {}'.format(epsp0))
+                        tlp = df[['TLP']].values[0].tolist() 
+                        logging.debug('TLP: {}'.format(tlp))   
+
+                        #time.sleep(2)                        
+
                         self.sample = df[self.SAMPLE_ID].unique()[0]
-                        print(self.sample)
-                        #df = dffile.loc[dffile[self.SAMPLE_ID]==sample,:].copy().reset_index()
+                        logging.debug(self.sample)
+                       
                         df_bak = df.copy()
                         # Analysing
-                        print('Analysing: {}'.format(self.sample))
+                        logging.debug('Analysing: {}'.format(self.sample))
 
                         if self.batchactivated != 'batch':
 
                             if df['rwc_sup'].notnull().values.any():
                                 self.rwc_sup = df['rwc_sup'][0]
-                                print('use user defined rwcsup value {}'.format(self.rwc_sup))
-                                time.sleep(1)
+                                logging.debug('use user defined rwcsup value {}'.format(self.rwc_sup))
+                                #time.sleep(1)
                             if df['rwc_inf'].notnull().values.any():   
                                 self.rwc_inf = df['rwc_inf'][0]
-                        print( self.rwc_sup,  self.rwc_inf)
-                        time.sleep(1)
+                        logging.debug('rwc thresholf {} - {}'.format(self.rwc_sup,  self.rwc_inf))
+                        #time.sleep(1)
                         # initialising gmin computation class
                         gmc = gminComput(self.TIME_COL,
                                         self.SAMPLE_ID,
@@ -619,7 +623,10 @@ class ParseTreeFolder():
                                         self.FW,
                                         self.DW,
                                         self.screen_move,
-                                        self.dateformat)
+                                        self.dateformat,
+                                        abcde,
+                                        epsp0,
+                                        tlp)
                         # computing time delta
                         df = gmc._compute_time_delta(df)
 
@@ -629,14 +636,13 @@ class ParseTreeFolder():
                             self.rwc_inf = self.rwc_inf_default
 
                         # computing RWC
-                        if 1>0:#(self.action_choice == '2') | (self.action_choice == '3'):
+                        if 1>0:
                             print('Computing RWC')
                             if self.action_choice == '2':
                                 df, t80, t50, rwc_sup, rwc_inf, method_of_dfw= gmc._compute_rwc(df)
                             else:
                                 df, t80, t50, rwc_sup, rwc_inf, method_of_dfw = gmc._compute_rwc(df, visualise = False)
-                            # self.t80 = t80
-                            # self.t50 = t50
+                           
                         else:
                             t80 = None
                             t50 = None
@@ -670,21 +676,23 @@ class ParseTreeFolder():
                                             self.rep_name,
                                             self.FW,
                                             self.DW,
-                                            self.screen_move)
+                                            self.screen_move,
+                                            abcde,
+                                            epsp0,
+                                            tlp)
 
                             print('choice: ', gmc.action_choice)
                             # computing time delta
                             df = gmc._compute_time_delta(df)
 
                             # computing RWC
-                            if 1>0:#(self.action_choice == '2') | (self.action_choice == '3'):
+                            if 1>0:
                                 print('Computing RWC')
                                 if self.action_choice == '2':
                                     df, t80, t50, rwc_sup, rwc_inf, method_of_dfw= gmc._compute_rwc(df)
                                 else:
                                     df, t80, t50, rwc_sup, rwc_inf, method_of_dfw = gmc._compute_rwc(df, visualise = False)
-                                # self.t80 = t80
-                                # self.t50 = t50
+                              
                             else:
                                 t80 = None
                                 t50 = None
@@ -702,36 +710,35 @@ class ParseTreeFolder():
                             t50 = selected_points[1][0]
 
 
-
-                        gs.extend([rwc_sup, rwc_inf, t80, t50, method_of_dfw])
-                        # print('gs: ', gs)
+                        logging.debug( 'gmc attribute {}' . format(gmc.shrinkage))
+                        gs.extend([rwc_sup, rwc_inf, t80, t50, method_of_dfw, gmc.shrinkage, abcde, gmc.correc, epsp0])
+                       
 
                        
 
                         global_score.append(gs)   
 
                         temp_df = pd.DataFrame(global_score, columns = ['Sample_ID', 'Interval_time','slope', 'Rsquared', 'Gmin_mean', 'pack',\
-                             'percentage_rwc_sup', 'percentage_rwc_inf', 'time_sup', 'time_inf', 'method_of_rwc'])
+                             'percentage_rwc_sup', 'percentage_rwc_inf', 'time_sup', 'time_inf', 'method_of_rwc', 'shrinkage', 'abcde', 'VPD_cor', 'epsp0'])
                         temp_df2 = pd.DataFrame(temp_df["pack"].to_list(), columns=['K', 'VPD', 'mean_T', 'mean_RH', 'mean_Patm', 'mean_area'])
+                        temp_df3 = pd.DataFrame(temp_df["abcde"].to_list(), columns=['a', 'b', 'c', 'd', 'e'])
+                        temp_df4 = pd.DataFrame(temp_df["epsp0"].to_list(), columns=['eps', 'p0'])
                         temp_df = temp_df.drop(columns='pack')
-                        temp_df = pd.concat([temp_df,temp_df2], axis = 1)
+                        logging.debug('unpacked pasck')
+                        temp_df = temp_df.drop(columns='abcde')
+                        logging.debug('unpacked abdce')
+                        temp_df = temp_df.drop(columns='epsp0')
+                        logging.debug('unpacked epsp0')
+                        temp_df = pd.concat([temp_df,temp_df2, temp_df3, temp_df4 ], axis = 1)
 
-                        # print('tf2: ', temp_folder) 
+                        # re order columns
                         temp_df['Campaign'] = temp_folder
 
                         temp_df = temp_df.drop(columns='Interval_time')
                         temp_df = temp_df[['Campaign','Sample_ID', 'Gmin_mean', 'percentage_rwc_sup', 'percentage_rwc_inf', 'time_sup', 'time_inf', 'method_of_rwc', \
-                                            'slope', 'Rsquared', 'K', 'VPD', 'mean_T', 'mean_RH', 'mean_Patm', 'mean_area']]
+                                            'slope', 'Rsquared', 'shrinkage','VPD_cor', 'K', 'VPD', 'mean_T', 'mean_RH', 'mean_Patm', 'mean_area', 'a', 'b', 'c', 'd', 'e', 'eps', 'p0']]                 
+
                         
-
-                        # PROBLEM HERE ##################
-                        # temp_df['percentage_rwc_sup']=rwc_sup
-                        # temp_df['percentage_rwc_inf']=rwc_inf
-
-                        # temp_df['time_rwc_sup']=t80
-                        # temp_df['time_rwc_inf']=t50
-                        ################################
-
                         if (self.action_choice == '2') | (self.action_choice == '3'):
                             temp_df['Mode']='RWC filtered'                             
                         else:
@@ -741,26 +748,17 @@ class ParseTreeFolder():
 
                         # append df to list
                         list_of_df.append(temp_df)
-                        # print(pd.concat(list_of_df))
-                        # global_score = []
+                       
                         pd.concat(list_of_df).reset_index().drop_duplicates(subset=['Campaign','index','Sample_ID','slope']).drop(columns='index').to_csv(self.rep_name+'/GMIN_df_complete.csv', index = False)
-                        # time.sleep(1)
-                        # print('saved !') 
-                        # 
+                    
                         #  Resetting action choice to initial value
                         self.action_choice = action_choice_bak
-
-
 
                     global_score = []
             else:
                 pass
 
         # save the appended df in a global file
-        # explode remove the square bracket [] from cells and convert to multiline
-        # pd.concat(list_of_df).reset_index().explode('Interval_time').to_csv(self.rep_name+'/RMSE_df_complete_full.csv')
-        # pd.concat(list_of_df).reset_index().explode('Interval_time').to_csv(self.rep_name+'/RMSE_df_complete_full.csv')
-        # pd.concat(list_of_df).reset_index().explode('Interval_time').drop_duplicates(subset=['Campaign','index','Sample_ID','slope']).to_csv(self.rep_name+'/RMSE_df_complete_full_No_duplicates.csv')
         pd.concat(list_of_df).reset_index().drop_duplicates(subset=['Campaign','index','Sample_ID','slope']).drop(columns='index').to_csv(self.rep_name+'/GMIN_df_complete.csv', index = False)
 
     def _agreg_batch(self):
@@ -802,8 +800,6 @@ class ParseTreeFolder():
             self.rwc_sup = rwc + self.delta//2
             self.rwc_inf = rwc - self.delta//2
             try:
-                print( self.rwc_sup,  self.rwc_inf)
-                time.sleep(1)
                 self._execute_computation()
             except:
                 print('failed to compute for {} between rwc {} and rwc {}'.format(self.sample, self.rwc_sup, self.rwc_inf))

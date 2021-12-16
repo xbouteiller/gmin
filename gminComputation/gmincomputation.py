@@ -18,6 +18,13 @@ import time
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename, askdirectory
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+logging.getLogger('matplotlib.font_manager').disabled = True
+
+logging.debug('Start of gmin computation')
+logging.disable(logging.ERROR)
+
 from .gmininit import ParseTreeFolder
 
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
@@ -40,7 +47,10 @@ class gminComput(ParseTreeFolder):
                 fresh_weight,
                 dry_weight,
                 screen_move,
-                dateformat):
+                dateformat,
+                abcde,
+                epsp0,
+                tlp):
 
         self.TIME_COL = time_col
         self.SAMPLE_ID = sample_id
@@ -64,6 +74,13 @@ class gminComput(ParseTreeFolder):
         self.screen_move = screen_move
 
         self.dateformat = dateformat
+
+
+        self.abcde = abcde
+        self.epsp0 = epsp0
+        self.tlp = tlp
+
+        logging.debug('abcde: {}\nepsp0: {}\ntlp: {}'.format(abcde, epsp0, tlp))
     
     def _get_valid_input(self, input_string, valid_options):
             '''
@@ -113,9 +130,9 @@ class gminComput(ParseTreeFolder):
         try:
             df['delta_time']
         except:
-            print('delta time column is leaking ... computing ...')
+            logging.debug('delta time column is leaking ... computing ...')
             
-            print(df[self.TIME_COL][0])
+            logging.debug(df[self.TIME_COL][0])
             try:
                 df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , format=self.dateformat)
             except:
@@ -126,10 +143,6 @@ class gminComput(ParseTreeFolder):
             df['delta_time'] = (df['TIME_COL2']-df['TIME_COL2'][0])   
             # convert time to minute
             df['delta_time'] = df['delta_time'].dt.total_seconds() / 60 # minutes 
-
-            
-
-        # print(df.head())
 
         return df
 
@@ -145,8 +158,23 @@ class gminComput(ParseTreeFolder):
                     # You can also use window.setGeometry
                     f.canvas.manager.window.move(x, y)
 
+    def _compute_shrinkage(self, rwc):
+        
 
-    def _compute_rwc(self, df, nmean = 21,  visualise = True):           
+        if np.isnan(self.abcde).any():
+            self.shrinkage = 'no_shrink'
+            logging.debug("no shrink, raw rwc")
+            pass            
+        else:
+            self.shrinkage = 'shrink'
+            a,b,c,d,e = self.abcde
+            shrink = a + b*rwc+ c*(rwc**2)+d*(rwc**3) + e*(rwc**4)
+            logging.debug("shrink is : {}".format(shrink))
+            return shrink
+
+    
+
+    def _compute_rwc(self, df, nmean = 13,  visualise = True):           
 
         from matplotlib.patches import Circle, Wedge, Polygon
         import warnings
@@ -166,43 +194,54 @@ class gminComput(ParseTreeFolder):
                 warnings.simplefilter("ignore", category=RuntimeWarning)
                 dry = np.nanmean(df[self.DW].values[-int(nmean):])
                 saturated = np.nanmean(df[self.FW].values[0:nmean])## or np.max() ??        
-            print('Using provided dry and fresh weight')
+            logging.debug('Using provided dry and fresh weight')
             method_of_dfw = 'provided_dry_fresh_weight'
-            print('dry: ', dry)
-            print('fresh: ', saturated)
+            logging.info('dry: {}'.format(dry))
+            logging.info('fresh: {}'.format( saturated))
             # print('nan dry: ', np.isnan(dry))
             if np.isnan(dry) or np.isnan(saturated):
-                print('Dry or Fresh weight should not be Nan') 
+                logging.error('Dry or Fresh weight should not be Nan') 
                 raise ValueError
         except:
             dry = np.nanmean(df[self.YVAR].values[-int(nmean):])
             saturated = np.nanmean(df[self.YVAR].values[0:nmean])## or np.max() ??
-            print('Using initial & last 20 values to compute fresh and dry weight')
+            logging.debug('Using initial & last {} values to compute fresh and dry weight'.format(nmean-1))
             method_of_dfw = 'estimated_dry_fresh_weight'
 
         rwc = 100*((df[self.YVAR].values-dry)/(saturated-dry))
 
+        shrinkage = self._compute_shrinkage(rwc)
+        logging.debug(shrinkage)      
+
+        
+        if self.shrinkage == 'shrink':
+            logging.warning('modified leaf area')
+            df[self.AREA] = df[self.AREA].values * shrinkage
+        else:
+            logging.debug('Unmodified leaf area')
+
         rwc_sup = find_nearest(rwc, rwc_thressup)
         rwc_inf = find_nearest(rwc, rwc_thresinf) 
-          
 
-        # print('RWC boundary: [{}% .. {}%]'.format(np.round(rwc_sup,2), np.round(rwc_inf,2)))
-        
-
+        logging.debug('RWC boundary: [{}% .. {}%]'.format(np.round(rwc_sup,2), np.round(rwc_inf,2)))       
+   
         try:
             df['delta_time']
         except:
-            def compute_time_lag(df):
-                df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , infer_datetime_format=True)  
-                # compute time delta between measures
-                # WARNING : the points need to be regurlarly sampled with a constant frequency
-                df['delta_time'] = (df['TIME_COL2']-df['TIME_COL2'][0])   
-                # convert time to minute
-                df['delta_time'] = df['delta_time'].dt.total_seconds() / 60 # minutes 
+            # I DON'T KNOW WHY I USED A NEW FUNC
+            # def compute_time_lag(df):
+            #     df['TIME_COL2'] = pd.to_datetime(df[self.TIME_COL] , infer_datetime_format=True)  
+            #     # compute time delta between measures
+            #     # WARNING : the points need to be regurlarly sampled with a constant frequency
+            #     df['delta_time'] = (df['TIME_COL2']-df['TIME_COL2'][0])   
+            #     # convert time to minute
+            #     df['delta_time'] = df['delta_time'].dt.total_seconds() / 60 # minutes 
 
-                return df
+            #     return df
             
-            df = compute_time_lag(df)
+            # df = compute_time_lag(df)
+            logging.warning('recomputing time delta')
+            df = self._compute_time_delta(df)
 
         # print(df.head(10))
         # print(df.tail(10))
@@ -211,13 +250,13 @@ class gminComput(ParseTreeFolder):
         t80 = np.min(df.loc[rwc == rwc_sup, "delta_time"].values)
         t50 = np.max(df.loc[rwc == rwc_inf, "delta_time"].values)
 
-        print('Detected RWC SUP {}% at {:.2f} min'.format(rwc_thressup,t80))
-        print('Detected RWC INF {}% at {:.2f} min'.format(rwc_thresinf,t50))
+        logging.info('Detected RWC SUP {}% at {:.2f} min'.format(rwc_thressup,t80))
+        logging.info('Detected RWC INF {}% at {:.2f} min'.format(rwc_thresinf,t50))
         
 
         if t80>=t50:
-            print('Warning, time at {}%: {} min, should be less than than time at {}%: {} min'.format(rwc_thressup,t80, rwc_thresinf,t50))
-            print('keeping full data set')
+            logging.warning('Warning, time at {}%: {} min, should be less than than time at {}%: {} min'.format(rwc_thressup,t80, rwc_thresinf,t50))
+            logging.warning('keeping full data set')
 
             t80 = df['delta_time'].values[0]
             t50 = df['delta_time'].values[-1]
@@ -225,13 +264,13 @@ class gminComput(ParseTreeFolder):
             rwc_sup = 100
             rwc_inf = 0
 
-            print('New: Detected RWC SUP 0% at {:.2f} min'.format(t80))
-            print('New: Detected RWC INF 100% at {:.2f} min'.format(t50))
+            logging.debug('New: Detected RWC SUP 0% at {:.2f} min'.format(t80))
+            logging.debug('New: Detected RWC INF 100% at {:.2f} min'.format(t50))
         
 
         TITLE = str(df[self.SAMPLE_ID].unique()[0])            
         fig, ax1 = plt.subplots()
-        print('open ...')
+        logging.debug('open ...')
 
         plt.title(TITLE)
         color = 'tab:blue'
@@ -259,7 +298,7 @@ class gminComput(ParseTreeFolder):
         figname = self.fig_folder + '/' + 'rwc' + '/' + TITLE + '.png'
         figname = self._test_saving_file(figname = figname)
         plt.savefig(figname, dpi = 420, bbox_inches = 'tight')
-        print('plotted from here')
+        logging.debug('plotted from here')
         # plt.pause(PAUSE_GRAPH)
         #plt.show(block=False)
         #print('open')
@@ -269,7 +308,7 @@ class gminComput(ParseTreeFolder):
                 self._move_figure(fig, self.screen_move, 0) 
                 # print('fig pos set')
             except:
-                print('fig pos not set') 
+                logging.debug('fig pos not set') 
             plt.show(block=False)
             #print('open')
             plt.waitforbuttonpress(0)
@@ -283,7 +322,7 @@ class gminComput(ParseTreeFolder):
         # print('action choice', self.action_choice )
 
         if self.action_choice !=  '1':
-            print('Slicing df between RWC80 and RWC50')
+            logging.info('Slicing df between RWC80 and RWC50')
             # df = df[(rwc < rwc_thressup) & (rwc > rwc_thresinf)].copy()
             # df_bak = df.copy()
             df = df[ (df.delta_time.values <= t50) & (df.delta_time.values >= t80)].copy()
@@ -291,8 +330,14 @@ class gminComput(ParseTreeFolder):
         # print('t min : {} min'.format(df.delta_time.min().round(3)))
         # print('t max : {} min'.format(df.delta_time.max().round(3)))
 
-        print('t min : {} min'.format(np.round(df.delta_time.min(), 3)))
-        print('t max : {} min'.format(np.round(df.delta_time.max(), 3)))
+        logging.debug('t min : {} min'.format(np.round(df.delta_time.min(), 3)))
+        logging.debug('t max : {} min'.format(np.round(df.delta_time.max(), 3)))
+
+        self.rwcmean = np.mean([rwc_inf, rwc_sup])
+        logging.debug('rwcsup: {}'.format(rwc_sup))
+        logging.debug('rwcinf: {}'.format(rwc_inf))
+        logging.debug('rwcmean: {}'.format(self.rwcmean ))
+        
 
         return df, t80, t50, rwc_sup, rwc_inf, method_of_dfw
 
@@ -520,6 +565,19 @@ class gminComput(ParseTreeFolder):
             gs = [TITLE, Xidx, slope, rsquared, gmin_mean, list_of_param]
         return gs, selected_points, relaunch
 
+    def _corrected_vpd(self, vpd, meanT, meanRH):        
+
+        if np.isnan(self.epsp0).any():
+            self.correc = 'no_vpd_correction'
+            logging.debug("no VPD CORR")
+            return vpd                        
+        else:
+            self.correc = 'vpd_correction'
+            eps, p0 = self.epsp0            
+            WP=p0/(self.rwcmean/100)+np.max(-p0-eps*(1-self.rwcmean/100),0)
+            vpd = (611.21*np.exp((18.678-meanT/234.5)*meanT/(257.14+meanT))*(np.exp(WP*2.16947115/(meanT+273.15))-meanRH/100)/1000)           
+            logging.debug("vpd_correction : {}, {}".format(eps, p0))
+            return vpd
 
 
     def _compute_gmin(self, df, slope, t1, t2 = None):
@@ -533,9 +591,14 @@ class gminComput(ParseTreeFolder):
             df = df[(df['delta_time']>= t1) & (df['delta_time']<= t2)].copy()
 
         k= (slope/18.01528)*(1000/60) #ici c'est en minutes (60*60*24)
-
+        # Est ce qu'il faut passer en element wise ?
         #Calcul VPD en kpa (Patm = 101.325 kPa)
         VPD =0.1*((6.13753*np.exp((17.966*np.mean(df[self.T].values)/(np.mean(df[self.T].values)+247.15)))) - (np.mean(df[self.RH].values)/100*(6.13753*np.exp((17.966*np.mean(df[self.T].values)/(np.mean(df[self.T].values)+247.15)))))) 
+        logging.debug('vpd : {}'.format(VPD))
+
+        VPD = self._corrected_vpd(VPD, np.mean(df[self.T].values), np.mean(df[self.RH].values) )
+        logging.debug('vpd corr: {}'.format(VPD))
+        
 
         #calcul gmin mmol.s
         gmin_ = -k * np.mean(df[self.PATM].values)/VPD
@@ -543,7 +606,7 @@ class gminComput(ParseTreeFolder):
         #calcul gmin en mmol.m-2.s-1
         gmin = gmin_ / np.mean(df[self.AREA].values)
 
-        print('gmin_mean: ', np.round(gmin, 3))
+        logging.info('gmin_mean: {}'.format(str(np.round(gmin, 3))))
 
         return gmin, [k, VPD, np.mean(df[self.T].values), np.mean(df[self.RH].values), np.mean(df[self.PATM].values), np.mean(df[self.AREA].values)]
 
