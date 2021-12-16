@@ -205,7 +205,7 @@ class gminComput(ParseTreeFolder):
         except:
             dry = np.nanmean(df[self.YVAR].values[-int(nmean):])
             saturated = np.nanmean(df[self.YVAR].values[0:nmean])## or np.max() ??
-            logging.debug('Using initial & last {} values to compute fresh and dry weight'.format(nmean-1))
+            logging.warning('Using initial & last {} values to compute fresh and dry weight'.format(nmean-1))
             method_of_dfw = 'estimated_dry_fresh_weight'
 
         rwc = 100*((df[self.YVAR].values-dry)/(saturated-dry))
